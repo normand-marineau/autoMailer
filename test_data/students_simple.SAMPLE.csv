@@ -1,0 +1,3 @@
+Courriel,Prenom,Nom,Cours,CodeCours,DateExam,HeureExam,Salle,Groupe,LienTeams
+student01@example.com,Alex,Durand,Exemple de cours A,Exemple de cours A,2026-01-20,09:00,A-123,G1,https://teams.example/meet/demo01
+student02@example.com,Sam,Tremblay,Exemple de cours B,Exemple de cours B,2026-01-21,10:30,B-204,G2,https://teams.example/meet/demo02

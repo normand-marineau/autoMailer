@@ -1,0 +1,20 @@
+﻿SUBJECT TEMPLATE:
+Test ULavalMailer v2 — {cours} ({codecours}) — {dateexam} {heureexam}
+
+BODY TEMPLATE:
+Bonjour {prenom} {nom},
+
+Ceci est un message de test (ULavalMailer v2).
+
+Examen:
+- Cours: {cours} ({codecours})
+- Date: {dateexam}
+- Heure: {heureexam}
+- Salle: {salle}
+- Groupe: {groupe}
+
+Lien Teams (si applicable):
+{lienteams}
+
+Merci,
+Alejandro
