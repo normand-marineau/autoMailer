@@ -8,6 +8,7 @@ from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
+from turtle import mode
 from typing import Callable, Dict, List, Set, Tuple
 
 from ulaval_mailer.core.text_utils import EMAIL_RE, now_stamp, render_template
@@ -27,9 +28,8 @@ except Exception:
 LogFn = Callable[[str], None]
 ProgressFn = Callable[[int, int], None]
 
-# Minimal scopes for drafts + sending
+# Send-only scope — draft mode removed (not required for Google OAuth verification)
 SCOPES = [
-    "https://www.googleapis.com/auth/gmail.compose",
     "https://www.googleapis.com/auth/gmail.send",
 ]
 
@@ -113,7 +113,7 @@ def _build_raw_email(to_addr: str, subject: str, text_body: str, html_body: str)
 
 def run_gmail_batch(
     *,
-    mode: str,  # "draft" | "send_now"
+    mode: str,  # "send_now"
     run_rows: List[Tuple[int, Dict[str, str]]],
     recipient_key: str,
     subject_tpl: str,
@@ -132,8 +132,8 @@ def run_gmail_batch(
     """
     svc = ensure_gmail_service(log=log)
 
-    if mode not in ("draft", "send_now", "send"):
-        raise NotImplementedError(f"Mode non supporté pour Gmail: {mode!r} (Phase C désactivée)")
+    if mode not in ("send_now", "send"):
+        raise NotImplementedError(f"Mode non supporté pour Gmail: {mode!r}. Seul 'send_now' est disponible.")
     if mode == "send":
         mode = "send_now"
 
@@ -158,7 +158,6 @@ def run_gmail_batch(
         skip_w.writerow(["row_index", "recipient", "reason"])
 
         sent = 0
-        drafted = 0
         skipped = 0
         errored = 0
 
@@ -195,24 +194,14 @@ def run_gmail_batch(
             try:
                 raw = _build_raw_email(recip, subj, txt, htm)
 
-                if mode == "draft":
-                    res = svc.users().drafts().create(
-                        userId="me",
-                        body={"message": {"raw": raw}},
-                    ).execute()
-                    drafted += 1
-                    did = res.get("id", "")
-                    send_w.writerow([datetime.now().isoformat(timespec="seconds"), i, recip, "gmail", mode, "drafted", f"OK (draft_id={did})"])
-                    log(f"[DRAFT] Ligne {i}: {recip} (draft_id={did})")
-                else:
-                    res = svc.users().messages().send(
-                        userId="me",
-                        body={"raw": raw},
-                    ).execute()
-                    sent += 1
-                    mid = res.get("id", "")
-                    send_w.writerow([datetime.now().isoformat(timespec="seconds"), i, recip, "gmail", mode, "sent", f"OK (msg_id={mid})"])
-                    log(f"[SENT]  Ligne {i}: {recip} (msg_id={mid})")
+                res = svc.users().messages().send(
+                    userId="me",
+                    body={"raw": raw},
+                ).execute()
+                sent += 1
+                mid = res.get("id", "")
+                send_w.writerow([datetime.now().isoformat(timespec="seconds"), i, recip, "gmail", mode, "sent", f"OK (msg_id={mid})"])
+                log(f"[SENT]  Ligne {i}: {recip} (msg_id={mid})")
 
             except Exception as e:
                 errored += 1
@@ -223,7 +212,7 @@ def run_gmail_batch(
             progress(n, total)
             time.sleep(min(0.25, delay))
 
-    summary = f"Gmail terminé. drafted={drafted}, sent={sent}, skipped={skipped}, error={errored}"
+    summary = f"Gmail terminé. sent={sent}, skipped={skipped}, error={errored}"
     if stop_event.is_set():
         summary += " (arrêt demandé)"
     log("— " + summary)

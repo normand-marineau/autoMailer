@@ -41,7 +41,7 @@ class MailerV2App(tk.Tk):
         self.loaded: Optional[LoadedData] = None
         self.recipient_key: tk.StringVar = tk.StringVar(value="")
         self.provider: tk.StringVar = tk.StringVar(value="outlook")  # outlook | gmail
-        self.mode: tk.StringVar = tk.StringVar(value="draft")        # draft | send_now
+        self.mode: tk.StringVar = tk.StringVar(value="send_now")     # send_now only (draft removed)
         self.throttle_per_min: tk.IntVar = tk.IntVar(value=30)
         self.test_run_enabled: tk.BooleanVar = tk.BooleanVar(value=True)
         self.test_run_n: tk.IntVar = tk.IntVar(value=3)
@@ -106,11 +106,10 @@ class MailerV2App(tk.Tk):
             "2) Message → Rédiger sujet + corps (Texte + HTML) avec variables {cle}\n"
             "3) Paramétrisation → Vérification (prévol)\n"
             "4) Dry-run (sans envoi) → vérifier logs\n"
-            "5) Brouillons (Outlook ou Gmail) — recommandé\n"
-            "6) Envoyer maintenant (Outlook ou Gmail) — confirmation requise\n\n"
+            "5) Envoyer maintenant (Outlook ou Gmail) — confirmation requise\n\n"
             "Gmail\n"
             "- Nécessite OAuth (bouton Connexion Gmail) + secrets/credentials.json.\n"
-            "- Crée soit des Brouillons Gmail, soit des envois immédiats.\n\n"
+            "- Envoie directement depuis ton compte Gmail.\n\n"
             "Règles\n"
             "- 1 destinataire par ligne.\n"
             "- Si un champ requis est vide/invalide: ligne ignorée + log.\n"
@@ -299,11 +298,8 @@ class MailerV2App(tk.Tk):
 
         row4 = ttk.Frame(f_mode)
         row4.pack(fill="x")
-        self.rb_draft = ttk.Radiobutton(row4, text="Brouillons", value="draft", variable=self.mode)
         self.rb_send = ttk.Radiobutton(row4, text="Envoyer maintenant", value="send_now", variable=self.mode)
-
-        self.rb_draft.pack(side="left")
-        self.rb_send.pack(side="left", padx=(16, 0))
+        self.rb_send.pack(side="left")
 
         if FEATURE_PHASE_C:
             self.rb_later = ttk.Radiobutton(row4, text="Envoyer plus tard", value="send_later", variable=self.mode)
@@ -582,8 +578,8 @@ class MailerV2App(tk.Tk):
             return
 
         mode = self.mode.get()
-        if mode not in ("draft", "send_now"):
-            messagebox.showinfo("À venir", "Envoyer plus tard (calendar + queue) arrive en phase C.\nPour l'instant: Brouillons ou Envoyer maintenant.")
+        if mode != "send_now":
+            messagebox.showinfo("Mode invalide", "Seul 'Envoyer maintenant' est disponible.")
             return
 
         run_rows = self._compute_run_rows()
@@ -592,28 +588,18 @@ class MailerV2App(tk.Tk):
             messagebox.showwarning("Aucune ligne", "Le fichier ne contient aucune ligne.")
             return
 
-        # Confirmation gate for real send
-        if mode == "send_now":
-            token_needed = f"ENVOYER {total}"
-            typed = simpledialog.askstring(
-                "Confirmation d'envoi",
-                f"Tu es sur le point d'envoyer {total} message(s).\n\n"
-                f"Pour confirmer, tape exactement:\n{token_needed}\n\n"
-                "Sinon, annule.",
-                parent=self
-            )
-            if typed != token_needed:
-                self.log("[ANNULÉ] Envoi annulé (confirmation incorrecte).")
-                return
-        else:
-            ok = messagebox.askokcancel(
-                "Créer des brouillons",
-                f"Créer {total} brouillon(s) ?",
-                parent=self
-            )
-            if not ok:
-                self.log("[ANNULÉ] Création de brouillons annulée.")
-                return
+        # Confirmation gate
+        token_needed = f"ENVOYER {total}"
+        typed = simpledialog.askstring(
+            "Confirmation d'envoi",
+            f"Tu es sur le point d'envoyer {total} message(s).\n\n"
+            f"Pour confirmer, tape exactement:\n{token_needed}\n\n"
+            "Sinon, annule.",
+            parent=self
+        )
+        if typed != token_needed:
+            self.log("[ANNULÉ] Envoi annulé (confirmation incorrecte).")
+            return
 
         # Provider readiness checks
         if self.provider.get() == "outlook":

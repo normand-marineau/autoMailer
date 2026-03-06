@@ -57,9 +57,8 @@ class ParamsTab(ttk.Frame):
         # Mode selection (draft, send now, send later) — Gmail supports only send now for now
         mode_frame = ttk.LabelFrame(self, text="Mode d'envoi")
         mode_frame.grid(row=3, column=0, sticky="ew", padx=5, pady=5)
-        self.mode_var = tk.StringVar(value="draft")
-        ttk.Radiobutton(mode_frame, text="Brouillon", variable=self.mode_var, value="draft").grid(row=0, column=0, padx=5, pady=5)
-        ttk.Radiobutton(mode_frame, text="Envoyer maintenant", variable=self.mode_var, value="send").grid(row=0, column=1, padx=5, pady=5)
+        self.mode_var = tk.StringVar(value="send_now")
+        ttk.Radiobutton(mode_frame, text="Envoyer maintenant", variable=self.mode_var, value="send_now").grid(row=0, column=0, padx=5, pady=5)
 
         # Test run and throttle controls (placeholders)
         options_frame = ttk.LabelFrame(self, text="Options avancées")

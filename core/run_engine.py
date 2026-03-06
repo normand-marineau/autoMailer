@@ -117,12 +117,8 @@ class RunEngine:
                 continue
             # Send via provider
             try:
-                if self.message_spec.mode == "draft":
-                    self.provider.create_draft(row[self.recipient_key], subject, body)
-                    status = "drafted"
-                elif self.message_spec.mode == "schedule":
+                if self.message_spec.mode == "schedule":
                     send_time = self.message_spec.schedule_time
-                    # For now, schedule mode is treated as send later in-app
                     self.provider.schedule_send(row[self.recipient_key], subject, body, send_time)  # type: ignore[call-arg]
                     status = "scheduled"
                 else:
