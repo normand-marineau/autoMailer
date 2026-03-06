@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>autoMailer — Bulk email tool for Université Laval</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red:   #C5282C;
+      --gold:  #F5A623;
+      --dark:  #1A1A1A;
+      --mid:   #4A4A4A;
+      --light: #F7F4F0;
+      --white: #FFFFFF;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--light); color: var(--dark); font-size: 17px; line-height: 1.65; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(247,244,240,0.93); backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.35rem; color: var(--red); text-decoration: none; }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-links a { font-size: 0.88rem; font-weight: 500; color: var(--mid); text-decoration: none; letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--red); }
+
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+      padding: 120px 48px 80px; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; top: -100px; right: -80px;
+      width: 580px; height: 580px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(197,40,44,0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin-bottom: 20px; animation: fadeUp 0.6s ease both; }
+    .hero h1 { font-family: 'DM Serif Display', serif; font-size: clamp(2.8rem, 6vw, 5rem); line-height: 1.08; letter-spacing: -0.02em; max-width: 680px; animation: fadeUp 0.6s ease 0.1s both; }
+    .hero h1 em { font-style: italic; color: var(--red); }
+    .hero-sub { margin-top: 28px; max-width: 500px; font-size: 1.08rem; color: var(--mid); font-weight: 300; animation: fadeUp 0.6s ease 0.2s both; }
+    .hero-actions { margin-top: 44px; display: flex; gap: 16px; flex-wrap: wrap; animation: fadeUp 0.6s ease 0.3s both; }
+    .btn-primary { display: inline-block; padding: 14px 32px; border-radius: 4px; background: var(--red); color: var(--white); font-size: 0.95rem; font-weight: 500; text-decoration: none; transition: background 0.2s, transform 0.15s; }
+    .btn-primary:hover { background: #a52024; transform: translateY(-1px); }
+    .btn-outline { display: inline-block; padding: 14px 32px; border-radius: 4px; border: 1.5px solid var(--dark); color: var(--dark); font-size: 0.95rem; font-weight: 500; text-decoration: none; transition: border-color 0.2s, color 0.2s, transform 0.15s; }
+    .btn-outline:hover { border-color: var(--red); color: var(--red); transform: translateY(-1px); }
+
+    .divider { height: 1px; background: rgba(0,0,0,0.08); margin: 0 48px; }
+    section { padding: 96px 48px; max-width: 1100px; margin: 0 auto; }
+    .section-label { font-size: 0.78rem; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin-bottom: 16px; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 4vw, 3rem); line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 20px; }
+    .section-body { color: var(--mid); max-width: 580px; font-size: 1.05rem; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2px; margin-top: 60px; border: 2px solid var(--dark); border-radius: 6px; overflow: hidden; }
+    .feature-card { padding: 40px 32px; background: var(--white); border-right: 2px solid var(--dark); transition: background 0.2s; }
+    .feature-card:last-child { border-right: none; }
+    .feature-card:hover { background: var(--light); }
+    .feature-icon { font-size: 1.8rem; margin-bottom: 18px; display: block; }
+    .feature-title { font-family: 'DM Serif Display', serif; font-size: 1.2rem; margin-bottom: 10px; }
+    .feature-desc { color: var(--mid); font-size: 0.93rem; }
+
+    .how-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; margin-top: 60px; }
+    .step { display: flex; gap: 24px; padding: 28px 0; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .step:last-child { border-bottom: none; }
+    .step-num { font-family: 'DM Serif Display', serif; font-size: 2.2rem; color: var(--red); line-height: 1; min-width: 44px; opacity: 0.55; }
+    .step-text h4 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; margin-bottom: 6px; }
+    .step-text p { color: var(--mid); font-size: 0.93rem; }
+    .how-visual { background: var(--dark); border-radius: 8px; padding: 28px 32px; color: var(--white); font-family: 'Courier New', monospace; font-size: 0.83rem; line-height: 1.9; }
+    .how-visual .cmt { color: #555; }
+    .how-visual .key { color: var(--gold); }
+    .how-visual .val { color: #7EC8A4; }
+
+    .scope-box { margin-top: 56px; border: 1.5px solid rgba(0,0,0,0.12); border-radius: 6px; overflow: hidden; }
+    .scope-header { padding: 18px 28px; background: var(--dark); color: var(--white); font-family: 'DM Serif Display', serif; font-size: 1.05rem; }
+    .scope-row { display: flex; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .scope-row:last-child { border-bottom: none; }
+    .scope-name { padding: 20px 24px; min-width: 220px; background: var(--white); font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--red); border-right: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; }
+    .scope-desc { padding: 20px 28px; background: var(--light); font-size: 0.92rem; color: var(--mid); }
+
+    footer { border-top: 1px solid rgba(0,0,0,0.08); padding: 40px 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 1.1rem; color: var(--red); }
+    .footer-links { display: flex; gap: 28px; }
+    .footer-links a { font-size: 0.88rem; color: var(--mid); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--red); }
+    .footer-copy { font-size: 0.8rem; color: #999; width: 100%; text-align: right; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; } .nav-links { display: none; }
+      .hero { padding: 100px 24px 60px; }
+      section { padding: 64px 24px; }
+      .how-wrapper { grid-template-columns: 1fr; gap: 40px; }
+      footer { padding: 32px 24px; } .footer-copy { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">autoMailer</a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#permissions">Permissions</a>
+    <a href="https://github.com/normand-marineau/autoMailer" target="_blank">GitHub</a>
+    <a href="privacy.html">Privacy</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <p class="hero-eyebrow">Université Laval · Faculty tool</p>
+  <h1>Bulk email,<br><em>done right</em><br>for educators.</h1>
+  <p class="hero-sub">autoMailer lets professors and teaching assistants send personalized emails to students from a CSV or Excel file — straight from their own Gmail or Outlook account. No middleman. No data stored.</p>
+  <div class="hero-actions">
+    <a class="btn-primary" href="https://github.com/normand-marineau/autoMailer/releases" target="_blank">Download latest release</a>
+    <a class="btn-outline" href="https://github.com/normand-marineau/autoMailer" target="_blank">View source on GitHub</a>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<section id="features">
+  <p class="section-label">What it does</p>
+  <h2 class="section-title">Everything you need,<br>nothing you don't.</h2>
+  <p class="section-body">Built for the rhythm of university life — course announcements, grade notifications, personalized feedback — without requiring IT involvement or an institutional mailing platform.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">📋</span>
+      <div class="feature-title">CSV &amp; Excel import</div>
+      <p class="feature-desc">Load your class list directly. Column headers become template variables — use <code>{prenom}</code>, <code>{note}</code>, or any header in your message body.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">✉️</span>
+      <div class="feature-title">Gmail &amp; Outlook</div>
+      <p class="feature-desc">Send from your own Gmail or Outlook account. Emails appear in your Sent folder. No third-party relay involved.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🔒</span>
+      <div class="feature-title">Privacy by design</div>
+      <p class="feature-desc">The app runs entirely on your computer. No student data, email content, or credentials ever leave your machine to any server we operate.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🧪</span>
+      <div class="feature-title">Dry-run &amp; preview</div>
+      <p class="feature-desc">Preview every rendered message row by row. Run a safe dry-run that logs results without delivering anything to any inbox.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="how">
+  <p class="section-label">Workflow</p>
+  <h2 class="section-title">From spreadsheet<br>to inbox in minutes.</h2>
+  <div class="how-wrapper">
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-text"><h4>Load your file</h4><p>Open a CSV or XLSX with your student list. autoMailer detects email columns automatically.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-text"><h4>Write your message</h4><p>Compose subject and body using <code>{variable}</code> placeholders. Preview any row instantly.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-text"><h4>Preflight check</h4><p>The app validates every recipient address and required field before you touch Send.</p></div>
+      </div>
+      <div class="step">
+        <div class="step-num">04</div>
+        <div class="step-text"><h4>Send &amp; log</h4><p>Confirm with a typed passphrase, send, and receive a full CSV log of every sent or skipped message.</p></div>
+      </div>
+    </div>
+    <div class="how-visual">
+      <span class="cmt"># Your CSV</span><br>
+      prenom, courriel, note<br>
+      Marie, m.tremblay@ulaval.ca, A<br>
+      Jean, j.cote@ulaval.ca, B+<br><br>
+      <span class="cmt"># Subject template</span><br>
+      <span class="key">Sujet:</span> <span class="val">Résultat — {prenom}</span><br><br>
+      <span class="cmt"># Body template</span><br>
+      Bonjour <span class="val">{prenom}</span>,<br>
+      Votre note est <span class="val">{note}</span>.<br><br>
+      <span class="cmt"># → 2 emails sent</span><br>
+      <span class="val">[SENT] Ligne 1: m.tremblay@…</span><br>
+      <span class="val">[SENT] Ligne 2: j.cote@…</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="permissions">
+  <p class="section-label">Google OAuth permissions</p>
+  <h2 class="section-title">We ask for exactly<br>what we need.</h2>
+  <p class="section-body">When you connect your Gmail account, autoMailer requests one single permission. Your emails, contacts, and account data are never accessed.</p>
+  <div class="scope-box">
+    <div class="scope-header">Requested Gmail permission</div>
+    <div class="scope-row">
+      <div class="scope-name">gmail.send</div>
+      <div class="scope-desc">Allows the app to send emails on your behalf. Used only when you click "Démarrer" and confirm with a typed passphrase. The app cannot read, delete, search, or list any of your emails.</div>
+    </div>
+  </div>
+  <p style="margin-top: 28px; color: var(--mid); font-size: 0.92rem;">
+    Your OAuth token is stored locally in <code>secrets/token.json</code> on your own machine. It is never transmitted to any server operated by this project. &nbsp;·&nbsp;
+    <a href="privacy.html" style="color: var(--red);">Read the full privacy policy →</a>
+  </p>
+</section>
+
+<footer>
+  <div class="footer-logo">autoMailer</div>
+  <div class="footer-links">
+    <a href="https://github.com/normand-marineau/autoMailer" target="_blank">GitHub</a>
+    <a href="https://github.com/normand-marineau/autoMailer/issues" target="_blank">Issues</a>
+    <a href="privacy.html">Privacy Policy</a>
+  </div>
+  <p class="footer-copy">© 2025 Normand Marineau · Open source under MIT License</p>
+</footer>
+
+</body>
+</html>
