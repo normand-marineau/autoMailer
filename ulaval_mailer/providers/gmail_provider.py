@@ -84,8 +84,6 @@ def ensure_gmail_service(*, log: LogFn, root: Path | None = None):
         tok_p.write_text(creds.to_json(), encoding="utf-8")
 
     svc = build("gmail", "v1", credentials=creds)
-    # lightweight sanity call (no heavy listing)
-    _ = svc.users().getProfile(userId="me").execute()
     log("[OK] Gmail OAuth prêt (token.json présent).")
     return svc
 
